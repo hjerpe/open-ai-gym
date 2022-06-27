@@ -32,17 +32,21 @@ class QLearning:
         :return: Returns a discrete representation with values 1, 2, 3, 4 whether the number
         is less than -0,5, less than 0, less than 0.5, or greater than 1.
         """
-        return np.digitize(number, [-0.1, 0, 0.1]) + 1
+        return np.digitize(number, [-0.5, -0.1, -0.05, 0, 0.05, 0.1, 0.5]) + 1
 
     def _state_integer_index(self, li):
         """
-        Returns a 1-1 mapping from a (6*4 + 2*2) dimensional vector to a 1D integer index.
+        Returns a 1-1 mapping from a
+        (6*size_discrete_state_dimension + 2*size_indicator_state_dimension)
+        dimensional vector to a 1D integer index.
         :param li: A list of 8 floating point numbers.
-        :return: An 1-1 mapping a (6*4 + 2*2) dimensional vector into an integer.
+        :return: An 1-1 mapping a
+        (6*size_discrete_state_dimension + 2*size_indicator_state_dimension) dimensional
+        vector into an integer.
         """
         states_to_discretize = li[:-2]
         indicator_states = li[-2:]
-        size_discrete_state_dimensions = 6
+        size_discrete_state_dimensions = 8
         size_indicator_state_dimension = 2
         index = 0
         for i in range(len(states_to_discretize)):
@@ -51,10 +55,12 @@ class QLearning:
         for i in range(len(indicator_states)):
             s = self._discretize_number(indicator_states[i])
             index += s*(size_indicator_state_dimension-i)
+        print(self.q_table.shape)
+        print(index)
         return index
 
     def _size_state_space(self):
-        return 4**6 + 2**2
+        return 6*8 + 2*2
 
     def _persist_q_table_to_disk(self, name=None):
         today_str = datetime.date.today().strftime("%Y%m%d")
@@ -83,24 +89,18 @@ class QLearning:
 
             while not done:
                 if random.uniform(0, 1) < self.epsilon:
-                    action = env.action_space.sample()  # Explore
+                    action = self.env.action_space.sample()  # Explore
                 else:
                     state_index = self._state_integer_index(state)
                     action = np.argmax(self.q_table[state_index])
 
-                next_state, reward, done, info = env.step(action)
+                next_state, reward, done, info = self.env.step(action)
                 next_state_index = self._state_integer_index(next_state)
 
                 old_value = self.q_table[state_index, action]
                 next_max = np.max([self.q_table[next_state_index]])
                 new_value = ((1-self.alpha)*old_value + self.alpha*(reward + self.gamma*next_max))
-                #print(new_value)
                 self.q_table[state_index, action] = new_value
-                #print(self.q_table)
-                #print(np.max(self.q_table))
-                #print(action)
-                #print(next_state_index)
-                #print(new_value)
                 if reward == -100:
                     penalties += 1
                 state = next_state
@@ -133,7 +133,6 @@ def heuristic_tyro(observation, t):
         "leg2_contact": leg2_contact
     }
     print(obs_dict)
-    action = None
     if obs_dict["leg1_contact"] == 1 or leg2_contact == 1:
         action = actions["no_action"]
     elif x_vel < -0.5:
@@ -152,17 +151,15 @@ def heuristic_tyro(observation, t):
         action = actions["no_action"]
     return action
 
-def policy(obs, t):
-    return actions["no_action"]
-
 
 def sample_policy(obs, t):
     action = env.action_space.sample()
     return action
 
+
 q_learn = QLearning(env=env)
-#q_learn.train()
-status = q_learn.load_q_table_from_disk(name="q_table_20220619")
+q_learn.train()
+status = q_learn.load_q_table_from_disk(name="q_table_20220627")
 print(status)
 TIME_LIMIT = 400
 EPISODE_LIMIT = 5
