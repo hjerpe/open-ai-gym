@@ -1,12 +1,30 @@
 import gym
 import time
+from typing import Dict, Tuple
+import numpy as np
+
 
 env = gym.make("LunarLander-v2")
-actions = {"no_action": 0, "left_engine": 1, "main_engine": 2, "right_engine": 3}
+StateType = np.ndarray
+actions: Dict[str, int] = {
+    "no_action": 0,
+    "left_engine": 1,
+    "main_engine": 2,
+    "right_engine": 3,
+}
 
 
-def heuristic_tyro(observation, t):
-    x_pos, y_pos, x_vel, y_vel, angle, angular_vel, leg1_contact, leg2_contact = observation
+def heuristic_tyro(observation: np.ndarray, time_: int):
+    (
+        x_pos,
+        y_pos,
+        x_vel,
+        y_vel,
+        angle,
+        angular_vel,
+        leg1_contact,
+        leg2_contact,
+    ) = observation
     obs_dict = {
         "x_pos": x_pos,
         "y_pos": y_pos,
@@ -15,7 +33,7 @@ def heuristic_tyro(observation, t):
         "angle": angle,
         "angular_vel": angular_vel,
         "leg1_contact": leg1_contact,
-        "leg2_contact": leg2_contact
+        "leg2_contact": leg2_contact,
     }
     print(obs_dict)
     action = None
@@ -37,11 +55,12 @@ def heuristic_tyro(observation, t):
         action = actions["no_action"]
     return action
 
-def policy(obs, t):
+
+def policy(obs, time_: int):
     return actions["no_action"]
 
 
-def sample_policy(obs, t):
+def sample_policy(obs, time_: int):
     action = env.action_space.sample()
     return action
 
@@ -49,13 +68,13 @@ def sample_policy(obs, t):
 TIME_LIMIT = 300
 EPISODE_LIMIT = 5
 for i_episode in range(EPISODE_LIMIT):
-    observation = env.reset()
-    for t in range(TIME_LIMIT):
+    observation_ = env.reset()
+    for time_ in range(TIME_LIMIT):
         env.render()
         time.sleep(0.001)
-        action = heuristic_tyro(observation, t)
-        observation, reward, done, info = env.step(action)
-        if done:
-            print("Episode finished after {} timesteps".format(t+1))
+        action = heuristic_tyro(observation_, time_)
+        observation_, reward_, done_, info_ = env.step(action)
+        if done_:
+            print("Episode finished after {} timesteps".format(time_ + 1))
             break
 env.close()
