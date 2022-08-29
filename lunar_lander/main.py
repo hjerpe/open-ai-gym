@@ -2,10 +2,10 @@ import gym
 import time
 from typing import Dict, Tuple
 import numpy as np
+import numpy.typing as npt
 
 
 env = gym.make("LunarLander-v2")
-StateType = np.ndarray
 actions: Dict[str, int] = {
     "no_action": 0,
     "left_engine": 1,
@@ -14,7 +14,12 @@ actions: Dict[str, int] = {
 }
 
 
-def heuristic_tyro(observation: np.ndarray, time_: int):
+def heuristic_tyro(observation: npt.NDArray[np.any], time_: int):
+    """
+    :param observation: An eight dimensional np.array representing a state.
+    :param time_: An integer denoting the current time step.
+    :return: An integer encoding an action.
+    """
     (
         x_pos,
         y_pos,
@@ -35,32 +40,41 @@ def heuristic_tyro(observation: np.ndarray, time_: int):
         "leg1_contact": leg1_contact,
         "leg2_contact": leg2_contact,
     }
-    print(obs_dict)
-    action = None
-    if leg1_contact == 1 or leg2_contact == 1:
+    action: int = -1
+    if obs_dict["leg1_contact"] == 1 or obs_dict["leg2_contact"] == 1:
         action = actions["no_action"]
-    elif x_vel < -0.5:
+    elif obs_dict["x_vel"] < -0.5:
         action = actions["right_engine"]
-    elif x_vel > 0.5:
+    elif obs_dict["x_vel"] > 0.5:
         action = actions["left_engine"]
-    elif y_vel < -0.3:
+    elif obs_dict["y_vel"] < -0.3:
         action = actions["main_engine"]
-    elif angle < 0.05:
+    elif obs_dict["angle"] < 0.05:
         action = actions["left_engine"]
-    elif angle > 0.05:
+    elif obs_dict["angle"] > 0.05:
         action = actions["right_engine"]
-    elif y_vel < -0.1:
+    elif obs_dict["y_vel"] < -0.1:
         action = actions["main_engine"]
     else:
         action = actions["no_action"]
     return action
 
 
-def policy(obs, time_: int):
+def zero_policy(observation: npt.NDArray[np.any], time_: int):
+    """
+    :param observation: An eight dimensional np.array representing a state.
+    :param time_: An integer denoting the current time step.
+    :return: An integer encoding no action.
+    """
     return actions["no_action"]
 
 
-def sample_policy(obs, time_: int):
+def sample_policy(observation: npt.NDArray[np.any], time_: int):
+    """
+    :param observation: An eight dimensional np.array representing a state.
+    :param time_: An integer denoting the current time step.
+    :return: An integer encoding a random action.
+    """
     action = env.action_space.sample()
     return action
 
@@ -68,7 +82,7 @@ def sample_policy(obs, time_: int):
 TIME_LIMIT = 300
 EPISODE_LIMIT = 5
 for i_episode in range(EPISODE_LIMIT):
-    observation_ = env.reset()
+    observation_, _ = env.reset()
     for time_ in range(TIME_LIMIT):
         env.render()
         time.sleep(0.001)
