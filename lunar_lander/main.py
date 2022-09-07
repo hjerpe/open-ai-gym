@@ -1,12 +1,11 @@
 import gym
 import time
-from typing import Dict, Tuple
 import numpy as np
 import numpy.typing as npt
 
 
 env = gym.make("LunarLander-v2")
-actions: Dict[str, int] = {
+actions: dict[str, int] = {
     "no_action": 0,
     "left_engine": 1,
     "main_engine": 2,
@@ -14,7 +13,7 @@ actions: Dict[str, int] = {
 }
 
 
-def heuristic_tyro(observation: npt.NDArray[np.any], time_: int):
+def heuristic_tyro(observation: npt.NDArray[np.any], time_: int) -> int:
     """
     :param observation: An eight dimensional np.array representing a state.
     :param time_: An integer denoting the current time step.
@@ -60,7 +59,7 @@ def heuristic_tyro(observation: npt.NDArray[np.any], time_: int):
     return action
 
 
-def zero_policy(observation: npt.NDArray[np.any], time_: int):
+def zero_policy(observation: npt.NDArray[np.any], time_: int) -> int:
     """
     :param observation: An eight dimensional np.array representing a state.
     :param time_: An integer denoting the current time step.
@@ -69,7 +68,7 @@ def zero_policy(observation: npt.NDArray[np.any], time_: int):
     return actions["no_action"]
 
 
-def sample_policy(observation: npt.NDArray[np.any], time_: int):
+def sample_policy(observation: npt.NDArray[np.any], time_: int) -> int:
     """
     :param observation: An eight dimensional np.array representing a state.
     :param time_: An integer denoting the current time step.
