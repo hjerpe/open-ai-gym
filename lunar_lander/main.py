@@ -32,7 +32,7 @@ def heuristic_tyro(observation: npt.NDArray[np.any], time_: int) -> int:
     obs_dict = {
         "x_pos": x_pos,
         "y_pos": y_pos,
-        "x_vel:": x_vel,
+        "x_vel": x_vel,
         "y_vel": y_vel,
         "angle": angle,
         "angular_vel": angular_vel,
@@ -81,7 +81,7 @@ def sample_policy(observation: npt.NDArray[np.any], time_: int) -> int:
 TIME_LIMIT = 300
 EPISODE_LIMIT = 5
 for i_episode in range(EPISODE_LIMIT):
-    observation_, _ = env.reset()
+    observation_ = env.reset()
     for time_ in range(TIME_LIMIT):
         env.render()
         time.sleep(0.001)
