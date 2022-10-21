@@ -13,10 +13,9 @@ actions: dict[str, int] = {
 }
 
 
-def heuristic_tyro(observation: npt.NDArray[np.float_], time_: int) -> int:
+def heuristic_tyro(observation: npt.NDArray[np.float_]) -> int:
     """
     :param observation: An eight dimensional np.array representing a state.
-    :param time_: An integer denoting the current time step.
     :return: An integer encoding an action.
     """
     (
@@ -59,10 +58,8 @@ def heuristic_tyro(observation: npt.NDArray[np.float_], time_: int) -> int:
     return action
 
 
-def zero_policy(observation: npt.NDArray[np.float_], time_: int) -> int:
+def zero_policy() -> int:
     """
-    :param observation: An eight dimensional np.array representing a state.
-    :param time_: An integer denoting the current time step.
     :return: An integer encoding no action.
     """
     return actions["no_action"]
@@ -83,7 +80,7 @@ for i_episode in range(EPISODE_LIMIT):
     for time_ in range(TIME_LIMIT):
         env.render()
         time.sleep(0.001)
-        action = heuristic_tyro(observation_, time_)
+        action = heuristic_tyro(observation_)
         observation_, reward_, done_, info_ = env.step(action)
         if done_:
             print("Episode finished after {} timesteps".format(time_ + 1))
