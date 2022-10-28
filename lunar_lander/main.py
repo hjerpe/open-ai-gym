@@ -1,3 +1,4 @@
+import argparse
 import gym
 import time
 import numpy as np
@@ -5,7 +6,7 @@ import numpy.typing as npt
 
 
 env = gym.make("LunarLander-v2")
-actions: dict[str, int] = {
+ACTIONS: dict[str, int] = {
     "no_action": 0,
     "left_engine": 1,
     "main_engine": 2,
@@ -40,21 +41,21 @@ def heuristic_tyro(observation: npt.NDArray[np.float_]) -> int:
     }
     action: int = -1
     if obs_dict["leg1_contact"] == 1 or obs_dict["leg2_contact"] == 1:
-        action = actions["no_action"]
+        action = ACTIONS["no_action"]
     elif obs_dict["x_vel"] < -0.5:
-        action = actions["right_engine"]
+        action = ACTIONS["right_engine"]
     elif obs_dict["x_vel"] > 0.5:
-        action = actions["left_engine"]
+        action = ACTIONS["left_engine"]
     elif obs_dict["y_vel"] < -0.3:
-        action = actions["main_engine"]
+        action = ACTIONS["main_engine"]
     elif obs_dict["angle"] < 0.05:
-        action = actions["left_engine"]
+        action = ACTIONS["left_engine"]
     elif obs_dict["angle"] > 0.05:
-        action = actions["right_engine"]
+        action = ACTIONS["right_engine"]
     elif obs_dict["y_vel"] < -0.1:
-        action = actions["main_engine"]
+        action = ACTIONS["main_engine"]
     else:
-        action = actions["no_action"]
+        action = ACTIONS["no_action"]
     return action
 
 
@@ -62,7 +63,7 @@ def zero_policy() -> int:
     """
     :return: An integer encoding no action.
     """
-    return actions["no_action"]
+    return ACTIONS["no_action"]
 
 
 def sample_policy() -> int:
@@ -73,16 +74,47 @@ def sample_policy() -> int:
     return int(action)
 
 
-TIME_LIMIT = 300
-EPISODE_LIMIT = 5
-for i_episode in range(EPISODE_LIMIT):
-    observation_ = env.reset().astype(np.float_) # type: ignore
-    for time_ in range(TIME_LIMIT):
-        env.render()
-        time.sleep(0.001)
-        action = heuristic_tyro(observation_)
-        observation_, reward_, done_, info_ = env.step(action)
-        if done_:
-            print("Episode finished after {} timesteps".format(time_ + 1))
-            break
-env.close()
+def main(args):
+    for i_episode in range(args.episodes):
+        observation_ = env.reset().astype(np.float_)  # type: ignore
+        for time_ in range(args.time_limit):
+            env.render()
+            time.sleep(0.001)
+
+            if args.policy == "heuristic":
+                action = heuristic_tyro(observation_)
+            elif args.policy == "random":
+                action = sample_policy()
+            elif args.policy == "zero":
+                action = zero_policy()
+
+            observation_, reward_, done_, info_ = env.step(action)
+            if done_:
+                print("Episode finished after {} timesteps".format(time_ + 1))
+                break
+    env.close()
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run Lunar Lander.")
+    parser.add_argument(
+        "--policy",
+        choices=["heuristic", "random", "zero"],
+        default="heuristic",
+        help="what policy to use",
+    )
+    parser.add_argument(
+        "--episodes",
+        type=int,
+        default=5,
+        help="how many episodes to run",
+    )
+    parser.add_argument(
+        "--time-limit",
+        type=int,
+        default=300,
+        help="time limit for each episode",
+    )
+
+    args = parser.parse_args()
+    main(args)
