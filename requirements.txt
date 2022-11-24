@@ -3,3 +3,4 @@ black==19.10b0
 pip~=21.2.2
 numpy~=1.22.3
 mypy==0.971
+mlflow==1.28.0
