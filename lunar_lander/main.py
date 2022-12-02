@@ -3,6 +3,8 @@ import gym
 import time
 import numpy as np
 import numpy.typing as npt
+import mlflow
+import os
 
 
 env = gym.make("LunarLander-v2")
@@ -75,9 +77,14 @@ def sample_policy() -> int:
 
 
 def main(args):
-    for i_episode in range(args.episodes):
+    if args.mlflow_logging:
+        mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
+        mlflow.set_experiment(args.mlflow_experiment_name)
+
+    rewards = []
+    for i_episode in range(1, args.episodes + 1):
         observation_ = env.reset().astype(np.float_)  # type: ignore
-        for time_ in range(args.time_limit):
+        for time_ in range(1, args.time_limit + 1):
             env.render()
             time.sleep(0.001)
 
@@ -90,8 +97,17 @@ def main(args):
 
             observation_, reward_, done_, info_ = env.step(action)
             if done_:
-                print("Episode finished after {} timesteps".format(time_ + 1))
+                print(
+                    f"Episode {i_episode} finished after {time_ + 1} timesteps with reward {reward_}"
+                )
+                rewards.append(reward_)
                 break
+    if args.mlflow_logging:
+        with mlflow.start_run(run_name=args.mlflow_run_name):
+            mlflow.log_param("Policy", args.policy)
+            mlflow.log_param("Episodes", args.episodes)
+            mlflow.log_param("Time limit", args.time_limit)
+            mlflow.log_metric("Average reward", sum(rewards) / len(rewards))
     env.close()
 
 
@@ -114,6 +130,22 @@ if __name__ == "__main__":
         type=int,
         default=300,
         help="time limit for each episode",
+    )
+    parser.add_argument(
+        "--mlflow-logging",
+        action="store_true",
+        help="""log experiment in MLFlow.
+        The following env variables needs to be set, MLFLOW_TRACKING_URI, MLFLOW_TRACKING_USERNAME, MLFLOW_TRACKING_PASSWORD
+        """,
+    )
+    parser.add_argument(
+        "--mlflow-experiment-name",
+        default="lunar-lander",
+        help="the name of the MLflow experiment",
+    )
+    parser.add_argument(
+        "--mlflow-run-name",
+        help="the name of the MLflow run",
     )
 
     args = parser.parse_args()
