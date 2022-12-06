@@ -219,7 +219,7 @@ class QLearning:
     def _get_model_dir(self):
         return "./data/models"
 
-    def load_q_table_from_disk(self, name="q_table_20220619"):
+    def load_q_table_from_disk(self, name):
         name = f"{self._get_model_dir()}/{name}"
         with open(name, "rb") as fp:
             self.q_table = pickle.load(fp)
