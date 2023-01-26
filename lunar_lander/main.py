@@ -8,6 +8,7 @@ import os
 import datetime
 import pickle
 import random
+from tb import ModifiedTensorBoard
 
 
 env = gym.make("LunarLander-v2")
@@ -355,6 +356,8 @@ if __name__ == "__main__":
         "--mlflow-run-name",
         help="the name of the MLflow run",
     )
+
+    tensorboard = ModifiedTensorBoard("tb_test", log_dir=f"./logs/tb-test-{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}")
 
     args = parser.parse_args()
     main(args)
